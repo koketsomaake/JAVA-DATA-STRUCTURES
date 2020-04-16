@@ -1,115 +1,96 @@
 package com.tyjohtech;
 
-public class gameTime {
+public class GameOfLife {
+    public static void main(String[] args)
+    {
+        int L = 10, A = 10;
+        //0 = dead cells and 1 = live cells
 
-    int width;
-    int height;
-    int[][] board;
+        int[][] grid = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 1, 1, 0, 0, 1, 0, 0 },
+                { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+        };
 
-    public gameTime(int width, int height) {
-        this.width = width;
-        this.height = height;
-        this.board = new int[width][height];
-    }
+        // looping through the grid
+        System.out.println("First Generation");
 
-    public void printBoard() {
-        System.out.println("---");
-        for (int y = 0; y < height; y++) {
-            String line = "|";
-            for (int x = 0; x < width; x++) {
-                if (this.board[x][y] == 0) {
-                    line += " +";
-                } else {
-                    line += " #";
-                }
+
+        for (int i = 0; i < L; i++)
+        {
+            for (int j = 0; j < A; j++)
+            {
+                if (grid[i][j] == 0)
+                    System.out.print("+");
+                else
+                    System.out.print("#");
             }
-            line += "|";
-            System.out.println(line);
+            System.out.println();
         }
-        System.out.println("---\n");
+        System.out.println();
+        final boolean generation = nextGeneration(grid, L, A);
     }
 
-    public void setAlive(int x, int y) {
-        this.board[x][y] = 1;
-    }
 
-    public void setDead(int x, int y) {
-        this.board[x][y] = 0;
-    }
+    // loop for next generation
+    static boolean nextGeneration(int grid[][], int L, int A)
+    {
+        int[][] future = new int[L][A];
 
-    public int countAlive(int x, int y) {
-        int count = 0;
+        // Loop through every cell
 
-        count += getState(x - 1, y - 1);
-        count += getState(x, y - 1);
-        count += getState(x + 1, y - 1);
+        for (int l = 1; l < L - 1; l++)
+        {
+            for (int z = 1; z < A - 1; z++)
+            {
+                // searching number Of Neighbours that are alive
+                int aliveNeighbours = 0;
+                for (int i = -1; i <= 1; i++)
+                    for (int j = -1; j <= 1; j++)
+                        aliveNeighbours += grid[l + i][z + j];
 
-        count += getState(x - 1, y);
-        count += getState(x + 1, y);
+                    //subtracting a cell that was counted before
+                aliveNeighbours -= grid[l][z];
 
-        count += getState(x - 1, y + 1);
-        count += getState(x, y + 1);
-        count += getState(x + 1, y + 1);
+                // Implementing the Rules of Life
 
-        return count;
-    }
+                // Cell is lonely and dies
+                if ((grid[l][z] == 1) && (aliveNeighbours < 2))
+                    future[l][z] = 0;
 
-    public int getState(int x, int y) {
-        if (x < 0 || x >= width) {
-            return 0;
-        }
+                    // Cell dies due to over population
+                else if ((grid[l][z] == 1) && (aliveNeighbours > 3))
+                    future[l][z] = 0;
 
-        if (y < 0 || y >= height) {
-            return 0;
-        }
+                    // A new cell is born
+                else if ((grid[l][z] == 0) && (aliveNeighbours == 3))
+                    future[l][z] = 1;
 
-        return this.board[x][y];
-    }
-
-    public void step() {
-        int[][] newBoard = new int[width][height];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int aliveBox = countAlive(x, y);
-
-                if (getState(x, y) == 1) {
-                    if (aliveBox < 2) {
-                        newBoard[x][y] = 0;
-                    } else if (aliveBox == 2 || aliveBox == 3) {
-                        newBoard[x][y] = 1;
-                    } else if (aliveBox > 3) {
-                        newBoard[x][y] = 0;
-                    }
-                } else {
-                    if (aliveBox == 3) {
-                        newBoard[x][y] = 1;
-                    }
-                }
-
+                    // It does not change
+                else
+                    future[l][z] = grid[l][z];
             }
         }
 
-        this.board = newBoard;
-    }
-
-    public static void main(String[] args) {
-        gameTime simulation = new gameTime(10, 10);
-
-        simulation.setAlive(2, 2);
-        simulation.setAlive(3, 2);
-        simulation.setAlive(4, 2);
-
-        simulation.printBoard();
-
-        simulation.step();
-
-        simulation.printBoard();
-
-        simulation.step();
-
-        simulation.printBoard();
-
+        System.out.println("Next Generation");
+        for (int i = 0; i < L; i++)
+        {
+            for (int j = 0; j < A; j++)
+            {
+                if (future[i][j] == 0)
+                    System.out.print("+");
+                else
+                    System.out.print("#");
+            }
+            System.out.println();
+        }
+        return true;
     }
 
 }
